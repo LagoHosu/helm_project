@@ -111,7 +111,11 @@ ingress:
     listenPorts: '[{"HTTP":80},{"HTTPS":443}]'
 
   externalDNS:
-    hostname: www.withgod.click
+    hostname: withgod.click,www.withgod.click
+
+  annotations:
+    alb.ingress.kubernetes.io/group.name: withgod-click-group
+    alb.ingress.kubernetes.io/group.order: '1'
 
   tls:
     enabled: true
@@ -120,7 +124,7 @@ ingress:
 
   defaultBackend:
     service:
-      name: app-svc
+      name: app-clusterip-svc
       port: 80
 
   # Optional extra labels/annotations to merge

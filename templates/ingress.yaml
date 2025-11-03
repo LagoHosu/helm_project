@@ -33,23 +33,3 @@ spec:
       port:
         number: {{ .Values.ingress.defaultBackend.service.port }}
 {{- end }}
-
-
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: {{ .Values.ingress.name }}
-#   annotations:
-#     alb.ingress.kubernetes.io/load-balancer-name: my-eks-alb
-#     alb.ingress.kubernetes.io/scheme: internet-facing
-#     alb.ingress.kubernetes.io/target-type: ip
-#     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-#     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:914296864199:certificate/8c5da541-21f4-45a9-92b5-0699d89fc8f5
-#     alb.ingress.kubernetes.io/ssl-redirect: '443'
-# spec:
-#   ingressClassName: alb
-#   defaultBackend:
-#     service:
-#       name: app-svc
-#       port:
-#         number: 80
