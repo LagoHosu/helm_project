@@ -1,0 +1,55 @@
+{{- if .Values.ingress.create }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "app-helm-chart.ingressName" . }}
+  {{- with .Values.ingress.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: {{ .Values.ingress.alb.loadBalancerName | quote }}
+    alb.ingress.kubernetes.io/scheme: {{ .Values.ingress.alb.scheme | quote }}
+    alb.ingress.kubernetes.io/target-type: {{ .Values.ingress.alb.targetType | quote }}
+    {{- if .Values.ingress.externalDNS.hostname }}
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.ingress.externalDNS.hostname | quote }}
+    {{- end }}
+    {{- if .Values.ingress.alb.listenPorts }}
+    # Must remain a JSON string
+    alb.ingress.kubernetes.io/listen-ports: {{ .Values.ingress.alb.listenPorts | quote }}
+    {{- end }}
+    {{- if and .Values.ingress.tls.enabled .Values.ingress.tls.certificateArn }}
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.tls.certificateArn | quote }}
+    alb.ingress.kubernetes.io/ssl-redirect: {{ printf "%q" (toString .Values.ingress.tls.redirectPort) }}
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  defaultBackend:
+    service:
+      name: {{ .Values.ingress.defaultBackend.service.name }}
+      port:
+        number: {{ .Values.ingress.defaultBackend.service.port }}
+{{- end }}
+
+
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: {{ .Values.ingress.name }}
+#   annotations:
+#     alb.ingress.kubernetes.io/load-balancer-name: my-eks-alb
+#     alb.ingress.kubernetes.io/scheme: internet-facing
+#     alb.ingress.kubernetes.io/target-type: ip
+#     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+#     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:914296864199:certificate/8c5da541-21f4-45a9-92b5-0699d89fc8f5
+#     alb.ingress.kubernetes.io/ssl-redirect: '443'
+# spec:
+#   ingressClassName: alb
+#   defaultBackend:
+#     service:
+#       name: app-svc
+#       port:
+#         number: 80

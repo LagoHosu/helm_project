@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app-helm-chart.fullname" . }}
+  labels:
+    {{- include "app-helm-chart.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount | default 2 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "app-helm-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "app-helm-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      # ✅ Secret 접근용 ServiceAccount (IAM Role 연동)
+      serviceAccountName: secret-access
+
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          # ✅ 환경 변수: Secrets Manager 연동
+          envFrom:
+            - secretRef:
+                name: django-settings-secrets
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+
+          # ✅ 리소스 요청 / 제한
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "500m"
+            limits:
+              memory: "512Mi"
+              cpu: "1"
+
+          # ✅ secrets-store CSI 볼륨 마운트
+          volumeMounts:
+            - name: django-settings-secrets
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+
+          # ✅ readinessProbe / livenessProbe (필요 시)
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+      # ✅ CSI 볼륨 정의
+      volumes:
+        - name: django-settings-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: django-settings-secrets
+
+      # ✅ (옵션) 노드 설정 등
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
