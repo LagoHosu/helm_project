@@ -60,6 +60,49 @@ serviceAccounts:
     annotations:
       eks.amazonaws.com/role-arn: arn:aws:iam::914296864199:role/AmazonEKSLoadBalancerControllerRole
 
+  secretAccess:
+    create: true
+    name: secret-access
+    automount: false
+    iamRoleArn: arn:aws:iam::914296864199:role/eks-secret-access-role
+    annotations: {}
+
+rbac:
+  secretsStore:
+    create: true
+    roleName: secrets-store-csi-driver-role
+    roleBindingName: secrets-store-csi-driver-rolebinding
+    serviceAccountName: secrets-store-csi-driver
+
+secretProviderClasses:
+  djangoSettings:
+    create: true
+    name: django-settings-secrets
+
+    # AWS provider config for Secrets Store CSI
+    aws:
+      region: ap-northeast-2
+      objectName: django-settings-secrets   # Name of the Secrets Manager secret
+      objectType: secretsmanager            # usually "secretsmanager"
+      objectStage: AWSCURRENT               # version stage to read
+
+    # Keys pulled from the secret (also become Kubernetes Secret keys)
+    secretKeys:
+      - DJANGO_SECRET_KEY
+      - DB_NAME
+      - DB_USER
+      - DB_PASSWORD
+      - DB_HOST
+      - DB_PORT
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - EMAIL_HOST_USER
+      - EMAIL_HOST_PASSWORD
+      - REDIS_HOST
+
+    # The resulting K8s Secret created by 'secretObjects'
+    secretName: django-settings-secrets
+    secretType: Opaque
 
 # This is for setting Kubernetes Annotations to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
