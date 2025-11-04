@@ -4,26 +4,22 @@
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 2
-
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
   image:
   repository: 914296864199.dkr.ecr.ap-northeast-2.amazonaws.com/django
   pullPolicy: IfNotPresent
-  tag: "v1.27"
+  tag: "bb5ba"
   # repository: nginx
   # # This sets the pull policy for images.
   # pullPolicy: IfNotPresent
   # # Overrides the image tag whose default is the chart appVersion.
   # tag: ""
-
-
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
 # This is to override the chart name.
 nameOverride: ""
 fullnameOverride: ""
-
 # 이 섹션은 애플리케이션 Pod가 사용할 기본 ServiceAccount 설정입니다.
 # serviceAccount:
 #   # Specifies whether a service account should be created
@@ -34,13 +30,10 @@ fullnameOverride: ""
 #   annotations: {}
 #   # The name of the service account to use.
 #   name: "" # 비워두면 자동으로 이름이 생성
-
 serviceAccount:
-  create: false            # 새 ServiceAccount 생성하지 않음
+  create: false # 새 ServiceAccount 생성하지 않음
   automount: false
-  name: secret-access      # 이미 존재하는 ServiceAccount 이름 지정
-
-
+  name: secret-access # 이미 존재하는 ServiceAccount 이름 지정
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccounts:
   externalDNS:
@@ -49,7 +42,6 @@ serviceAccounts:
     namespace: kube-system
     annotations:
       eks.amazonaws.com/role-arn: arn:aws:iam::914296864199:role/AmazonEKSExternalDNSRole
-
   albController:
     create: true
     name: aws-load-balancer-controller-helm
@@ -59,33 +51,28 @@ serviceAccounts:
       app.kubernetes.io/name: aws-load-balancer-controller-helm
     annotations:
       eks.amazonaws.com/role-arn: arn:aws:iam::914296864199:role/AmazonEKSLoadBalancerControllerRole
-
   secretAccess:
     create: true
     name: secret-access
     automount: false
     iamRoleArn: arn:aws:iam::914296864199:role/eks-secret-access-role
     annotations: {}
-
 rbac:
   secretsStore:
     create: true
     roleName: secrets-store-csi-driver-role
     roleBindingName: secrets-store-csi-driver-rolebinding
     serviceAccountName: secrets-store-csi-driver
-
 secretProviderClasses:
   djangoSettings:
     create: true
     name: django-settings-secrets
-
     # AWS provider config for Secrets Store CSI
     aws:
       region: ap-northeast-2
-      objectName: django-settings-secrets   # Name of the Secrets Manager secret
-      objectType: secretsmanager            # usually "secretsmanager"
-      objectStage: AWSCURRENT               # version stage to read
-
+      objectName: django-settings-secrets # Name of the Secrets Manager secret
+      objectType: secretsmanager # usually "secretsmanager"
+      objectStage: AWSCURRENT # version stage to read
     # Keys pulled from the secret (also become Kubernetes Secret keys)
     secretKeys:
       - DJANGO_SECRET_KEY
@@ -99,85 +86,71 @@ secretProviderClasses:
       - EMAIL_HOST_USER
       - EMAIL_HOST_PASSWORD
       - REDIS_HOST
-
     # The resulting K8s Secret created by 'secretObjects'
     secretName: django-settings-secrets
     secretType: Opaque
-
 # This is for setting Kubernetes Annotations to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
 podAnnotations: {}
 # This is for setting Kubernetes Labels to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
-
 podSecurityContext: {}
-  # fsGroup: 2000
+# fsGroup: 2000
 
 securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
   create: true
   # Rendered metadata.name. If empty, helper will fall back to a sane default.
   name: app-clusterip-svc
-
   type: ClusterIP
   port: 80
   targetPort: 8000
-
   # Optional: override labels/annotations on the Service object only
   labels: {}
   annotations: {}
-
   # Optional: if you want a custom selector (otherwise will use chart selectorLabels)
   # selector:
   #   app: app
-
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   create: true
   name: my-ingress
   className: alb
-
   alb:
     loadBalancerName: my-eks-alb-helm
-    scheme: internet-facing        # or "internal"
-    targetType: ip                 # or "instance"
+    scheme: internet-facing # or "internal"
+    targetType: ip # or "instance"
     # Keep as a JSON string for the ALB annotation:
     listenPorts: '[{"HTTP":80},{"HTTPS":443}]'
-
   externalDNS:
     hostname: withgod.click,www.withgod.click
-
   annotations:
     alb.ingress.kubernetes.io/group.name: withgod-click-group
     alb.ingress.kubernetes.io/group.order: '1'
-
   tls:
     enabled: true
     certificateArn: arn:aws:acm:ap-northeast-2:914296864199:certificate/8c5da541-21f4-45a9-92b5-0699d89fc8f5
     redirectPort: 443
-
   defaultBackend:
     service:
       name: app-clusterip-svc
       port: 80
+      # Optional extra labels/annotations to merge
+      # labels: {}
+      # annotations: {}
 
-  # Optional extra labels/annotations to merge
-  # labels: {}
-  # annotations: {}
-
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - chart-example.local
 # -- Expose the service via gateway-api HTTPRoute
 # Requires Gateway API resources and suitable controller installed within the cluster
 # (see: https://gateway-api.sigs.k8s.io/guides/)
@@ -188,18 +161,18 @@ httpRoute:
   annotations: {}
   # Which Gateways this Route is attached to.
   parentRefs:
-  - name: gateway
-    sectionName: http
-    # namespace: default
+    - name: gateway
+      sectionName: http
+      # namespace: default
   # Hostnames matching HTTP header.
   hostnames:
-  - chart-example.local
+    - chart-example.local
   # List of rules and filters applied.
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /headers
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /headers
   #   filters:
   #   - type: RequestHeaderModifier
   #     requestHeaderModifier:
@@ -215,18 +188,17 @@ httpRoute:
   #     headers:
   #     - name: version
   #       value: v2
-
 resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+# limits:
+#   cpu: 100m
+#   memory: 128Mi
+# requests:
+#   cpu: 100m
+#   memory: 128Mi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
@@ -236,8 +208,7 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /
-    port: 8000  #http
-
+    port: 8000 #http
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
   enabled: false
@@ -245,7 +216,6 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
-
 # Additional volumes on the output Deployment definition.
 volumes: []
 # - name: foo
@@ -260,7 +230,5 @@ volumeMounts: []
 #   readOnly: true
 
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
