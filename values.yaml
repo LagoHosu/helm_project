@@ -9,7 +9,7 @@ image:
   image:
   repository: 914296864199.dkr.ecr.ap-northeast-2.amazonaws.com/django
   pullPolicy: IfNotPresent
-  tag: "9674e"
+  tag: "0d477"
   # repository: nginx
   # # This sets the pull policy for images.
   # pullPolicy: IfNotPresent
