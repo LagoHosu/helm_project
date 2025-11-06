@@ -6,10 +6,9 @@
 replicaCount: 2
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  image:
   repository: 914296864199.dkr.ecr.ap-northeast-2.amazonaws.com/django
   pullPolicy: IfNotPresent
-  tag: "0d477"
+  tag: "v1.27"
   # repository: nginx
   # # This sets the pull policy for images.
   # pullPolicy: IfNotPresent
@@ -54,9 +53,11 @@ serviceAccounts:
   secretAccess:
     create: true
     name: secret-access
+    # automount: true
     automount: false
     iamRoleArn: arn:aws:iam::914296864199:role/eks-secret-access-role
     annotations: {}
+    
 rbac:
   secretsStore:
     create: true
@@ -111,7 +112,7 @@ service:
   create: true
   # Rendered metadata.name. If empty, helper will fall back to a sane default.
   name: app-clusterip-svc
-  type: ClusterIP
+  type: ClusterIP #Loadbalancer #ClusterIP
   port: 80
   targetPort: 8000
   # Optional: override labels/annotations on the Service object only
@@ -193,12 +194,12 @@ resources: {}
 # choice for the user. This also increases chances charts run on environments with little
 # resources, such as Minikube. If you do want to specify resources, uncomment the following
 # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-# limits:
-#   cpu: 100m
-#   memory: 128Mi
-# requests:
-#   cpu: 100m
-#   memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 500m
+    memory: 256Mi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
@@ -211,13 +212,19 @@ readinessProbe:
     port: 8000 #http
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 30
   # targetMemoryUtilizationPercentage: 80
 # Additional volumes on the output Deployment definition.
-volumes: []
+volumes:
+  - name: django-settings-secrets
+    csi:
+      driver: secrets-store.csi.k8s.io
+      readOnly: true
+      volumeAttributes:
+        secretProviderClass: "django-settings-secrets"
 # - name: foo
 #   secret:
 #     secretName: mysecret
@@ -228,6 +235,8 @@ volumeMounts: []
 # - name: foo
 #   mountPath: "/etc/foo"
 #   readOnly: true
+
+
 
 nodeSelector: {}
 tolerations: []
