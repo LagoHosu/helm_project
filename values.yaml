@@ -8,7 +8,7 @@ replicaCount: 2
 image:
   repository: 914296864199.dkr.ecr.ap-northeast-2.amazonaws.com/django
   pullPolicy: IfNotPresent
-  tag: "v1.27"
+  tag: "6f6da"
   # repository: nginx
   # # This sets the pull policy for images.
   # pullPolicy: IfNotPresent
@@ -57,7 +57,6 @@ serviceAccounts:
     automount: false
     iamRoleArn: arn:aws:iam::914296864199:role/eks-secret-access-role
     annotations: {}
-    
 rbac:
   secretsStore:
     create: true
@@ -190,17 +189,16 @@ httpRoute:
             #     - name: version
             #       value: v2
 resources:
-# We usually recommend not to specify default resources and to leave this as a conscious
-# choice for the user. This also increases chances charts run on environments with little
-# resources, such as Minikube. If you do want to specify resources, uncomment the following
-# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   limits:
     cpu: 500m
     memory: 512Mi
   requests:
     cpu: 500m
     memory: 256Mi
-
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
