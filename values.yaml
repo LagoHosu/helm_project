@@ -8,7 +8,7 @@ replicaCount: 2
 image:
   repository: 914296864199.dkr.ecr.ap-northeast-2.amazonaws.com/django
   pullPolicy: IfNotPresent
-  tag: "50809"
+  tag: "1b38d"
   # repository: nginx
   # # This sets the pull policy for images.
   # pullPolicy: IfNotPresent
